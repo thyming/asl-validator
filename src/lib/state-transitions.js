@@ -11,12 +11,27 @@ module.exports = (definition) => {
   // targets for states outside the containers.
   const nextAndDefaultTargets = (nestedStateMachine) => {
     const states = [];
-    Object.keys(nestedStateMachine.States).forEach((stateName) => {
-      const nestedState = nestedStateMachine.States[stateName];
-      const isContainer = ['Map', 'Parallel'].indexOf(nestedState.Type) >= 0;
-      const path = isContainer ? '$.[Next,Default]' : '$..[Next,Default]';
-      states.push(...JSONPath({ json: nestedState, path }));
-    });
+    Object.keys(nestedStateMachine.States)
+      .forEach((stateName) => {
+        const nestedState = nestedStateMachine.States[stateName];
+        const isContainer = ['Map', 'Parallel'].indexOf(nestedState.Type) >= 0;
+        const path = isContainer ? '$.[Next,Default]' : '$..[Next,Default]';
+        if (isContainer) {
+          states.push(...JSONPath({
+            json: nestedState,
+            path: '$.Next',
+          }));
+          states.push(...JSONPath({
+            json: nestedState,
+            path: '$.Default',
+          }));
+        } else {
+          states.push(...JSONPath({
+            json: nestedState,
+            path,
+          }));
+        }
+      });
     return states;
   };
 
